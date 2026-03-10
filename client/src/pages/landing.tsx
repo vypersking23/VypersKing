@@ -26,6 +26,17 @@ import {
 import type { Showcase, Package } from "@shared/schema";
 import { queryClient } from "@/lib/queryClient";
 import { HeaderLogo } from "@/components/header-logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 function formatIdr(value: string | number): string {
   const n = typeof value === "string" ? parseFloat(String(value).replace(/,/g, "")) || 0 : Number(value);
@@ -118,12 +129,12 @@ export default function Landing() {
     <div className="min-h-screen bg-background circuit-overlay">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b glass">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 font-serif text-xl font-bold tracking-wide">
+        <div className="container flex h-16 items-center justify-between gap-2 px-4">
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-serif text-xl font-bold tracking-wide">
             <HeaderLogo size="md" />
             KingVypers
           </Link>
-          <nav className="flex items-center gap-3">
+          <nav className="hidden sm:flex items-center gap-3 flex-shrink-0">
             <Button variant="outline" size="sm" asChild>
               <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer" className="gap-1.5">
                 <MessageCircle className="h-4 w-4" />
@@ -139,6 +150,32 @@ export default function Landing() {
               </Button>
             </Link>
           </nav>
+          <div className="sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Menu
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40">
+                <DropdownMenuItem>
+                  <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer" className="w-full">
+                    Join Discord
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <a href="/beli" className="w-full">
+                    Beli Sekarang
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <a href="/validate" className="w-full">
+                    Validate Key
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 
@@ -179,7 +216,59 @@ export default function Landing() {
           <div className="container px-4">
             <h2 className="font-serif text-3xl font-bold tracking-wide text-center mb-2">Pilih Paket</h2>
             <p className="text-center text-muted-foreground mb-8 md:mb-10">Pilih durasi dan beli key via Discord.</p>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
+            {/* Mobile carousel */}
+            <div className="sm:hidden">
+              <Carousel className="relative">
+                <CarouselContent>
+                  {packageItems.map((pkg) => {
+                    const features = [pkg.feature1, pkg.feature2, pkg.feature3, pkg.feature4].filter(Boolean);
+                    return (
+                      <CarouselItem key={pkg.id}>
+                        <div
+                          className={`relative flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden glass`}
+                        >
+                          {pkg.isPopular ? (
+                            <div className="absolute left-0 right-0 top-0 bg-primary py-1.5 text-center text-xs font-semibold text-primary-foreground">
+                              Most Popular
+                            </div>
+                          ) : null}
+                          <div className={pkg.isPopular ? "pt-10" : ""}>
+                            {pkg.imageUrl ? (
+                              <div className="aspect-video w-full overflow-hidden bg-muted">
+                                <img src={pkg.imageUrl} alt="" className="h-full w-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                                <span className="text-muted-foreground text-sm">No image</span>
+                              </div>
+                            )}
+                            <div className="p-5 flex flex-1 flex-col">
+                              <h3 className="font-semibold text-lg">{pkg.title}</h3>
+                              <ul className="mt-3 space-y-1.5 text-sm">
+                                {features.map((f, i) => (
+                                  <li key={i} className="flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                                    {f}
+                                  </li>
+                                ))}
+                              </ul>
+                              <p className="mt-4 text-xl font-bold">IDR {formatIdr(pkg.price ?? 0)}</p>
+                              <Button className="mt-4 w-full" asChild>
+                                <a href={pkg.buyLink} target="_blank" rel="noopener noreferrer">
+                                  Beli Sekarang
+                                </a>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+              </Carousel>
+            </div>
+            {/* Desktop grid */}
+            <div className="hidden sm:grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
               {packageCards.map((pkg) => {
                 const features = [pkg.feature1, pkg.feature2, pkg.feature3, pkg.feature4].filter(Boolean);
                 return (
@@ -289,7 +378,78 @@ export default function Landing() {
                 </>
               )}
             </div>
-            <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Mobile carousel */}
+            <div className="sm:hidden">
+              <Carousel>
+                <CarouselContent>
+                  {filtered.map((item) => {
+                    const vidId = getYoutubeId(item.youtubeUrl);
+                    const Icon1 = ICON_MAP[item.feature1Icon ?? "Zap"] ?? Zap;
+                    const Icon2 = ICON_MAP[item.feature2Icon ?? "Shield"] ?? Shield;
+                    const Icon3 = ICON_MAP[item.feature3Icon ?? "Star"] ?? Star;
+                    return (
+                      <CarouselItem key={item.id}>
+                        <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm glass">
+                          <div className="absolute right-2 top-2 z-10">
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                item.type === "free"
+                                  ? "bg-chart-2 text-white"
+                                  : "bg-amber-500 text-black"
+                              }`}
+                            >
+                              {item.type === "free" ? "FREE" : "PREMIUM"}
+                            </span>
+                          </div>
+                          {vidId ? (
+                            <button
+                              type="button"
+                              className="relative aspect-video w-full overflow-hidden bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                              onClick={() => openVideo(item)}
+                            >
+                              <img
+                                src={`https://img.youtube.com/vi/${vidId}/mqdefault.jpg`}
+                                alt=""
+                                className="h-full w-full object-cover transition group-hover:opacity-90"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition group-hover:bg-black/40">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
+                                  <Play className="h-7 w-7 text-primary ml-1" />
+                                </div>
+                              </div>
+                            </button>
+                          ) : (
+                            <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                              <span className="text-muted-foreground text-sm">No video</span>
+                            </div>
+                          )}
+                          <div className="flex flex-1 flex-col p-4">
+                            <h3 className="font-semibold text-lg">{item.scriptName}</h3>
+                            <p className="text-sm text-muted-foreground">{item.gameName}</p>
+                            <ul className="mt-3 space-y-1.5 text-sm">
+                              <li className="flex items-center gap-2">
+                                <Icon1 className="h-4 w-4 shrink-0 text-primary" />
+                                {item.feature1Text}
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <Icon2 className="h-4 w-4 shrink-0 text-primary" />
+                                {item.feature2Text}
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <Icon3 className="h-4 w-4 shrink-0 text-primary" />
+                                {item.feature3Text}
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+              </Carousel>
+            </div>
+            {/* Desktop grid */}
+            <div className="hidden sm:grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((item) => {
                 const vidId = getYoutubeId(item.youtubeUrl);
                 const Icon1 = ICON_MAP[item.feature1Icon ?? "Zap"] ?? Zap;
