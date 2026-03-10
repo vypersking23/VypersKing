@@ -37,6 +37,10 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import {
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
 
 function formatIdr(value: string | number): string {
   const n = typeof value === "string" ? parseFloat(String(value).replace(/,/g, "")) || 0 : Number(value);
@@ -265,6 +269,8 @@ export default function Landing() {
                     );
                   })}
                 </CarouselContent>
+                <CarouselPrevious className="!left-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur border" />
+                <CarouselNext className="!right-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur border" />
               </Carousel>
             </div>
             {/* Desktop grid */}
@@ -446,6 +452,8 @@ export default function Landing() {
                     );
                   })}
                 </CarouselContent>
+                <CarouselPrevious className="!left-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur border" />
+                <CarouselNext className="!right-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur border" />
               </Carousel>
             </div>
             {/* Desktop grid */}
